@@ -1,19 +1,17 @@
-use crate::bspc::{self, get_desktop_count};
+use crate::bspc::{self, get_desktops};
 
 pub struct Desktops {
     desktops: usize,
-    current_index: usize,
     desktop_history: Vec<usize>,
 }
 
 impl Desktops {
     pub fn new() -> Self {
-        let desktops = get_desktop_count();
+        let desktops = get_desktops().len();
 
         Self {
-            desktop_history: (0..desktops).collect(),
+            desktop_history: vec![0],
             desktops,
-            current_index: 0,
         }
     }
 
@@ -28,11 +26,17 @@ impl Desktops {
         let idx = self
             .desktop_history
             .iter()
-            .position(|&d| d == current_index)
-            .unwrap_or(0);
+            .position(|&d| d == current_index);
 
-        let temp = self.desktop_history.remove(idx);
-        self.desktop_history.insert(0, temp);
+        match idx {
+            Some(idx) => {
+                let temp = self.desktop_history.remove(idx);
+                self.desktop_history.insert(0, temp);
+            }
+            None => {
+                self.desktop_history.insert(0, current_index)
+            }
+        }
 
         self.update();
     }
@@ -48,11 +52,17 @@ impl Desktops {
         let idx = self
             .desktop_history
             .iter()
-            .position(|&d| d == current_index)
-            .unwrap_or(0);
+            .position(|&d| d == current_index);
 
-        let temp = self.desktop_history.remove(idx);
-        self.desktop_history.insert(0, temp);
+        match idx {
+            Some(idx) => {
+                let temp = self.desktop_history.remove(idx);
+                self.desktop_history.insert(0, temp);
+            }
+            None => {
+                self.desktop_history.insert(0, current_index)
+            }
+        }
 
         self.update();
     }
@@ -64,11 +74,17 @@ impl Desktops {
         let idx = self
             .desktop_history
             .iter()
-            .position(|&d| d == current_index)
-            .unwrap_or(0);
+            .position(|&d| d == current_index);
 
-        let temp = self.desktop_history.remove(idx);
-        self.desktop_history.insert(0, temp);
+        match idx {
+            Some(idx) => {
+                let temp = self.desktop_history.remove(idx);
+                self.desktop_history.insert(0, temp);
+            }
+            None => {
+                self.desktop_history.insert(0, current_index)
+            }
+        }
 
         self.update();
     }
@@ -76,7 +92,9 @@ impl Desktops {
     /// Go to the desktop that was last visited. If you were on 4, then 2 and then 8, and then called
     /// `last(2)` you will go to desktop 4
     pub fn last(&mut self, count: usize) {
-        let current_index = self.desktop_history[count % self.desktops];
+        self.clean_history();
+
+        let current_index = self.desktop_history[count % self.desktop_history.len()];
 
         let idx = self
             .desktop_history
@@ -90,12 +108,24 @@ impl Desktops {
         self.update();
     }
 
-    pub fn preview_last(&self, count: usize) {
-        let current_index = self.desktop_history[count % self.desktops];
+    pub fn preview_last(&mut self, count: usize) {
+        self.clean_history();
+
+        let current_index = self.desktop_history[count % self.desktop_history.len()];
         bspc::go_to_tab(current_index + 1);
     }
 
     fn update(&self) {
         bspc::go_to_tab(self.desktop_history[0] + 1);
+    }
+
+    fn clean_history(&mut self) {
+        let active_desktops = bspc::get_active_desktops();
+
+        for i in 0..self.desktop_history.len().saturating_sub(1) {
+            if !active_desktops.contains(&self.desktop_history[i]) {
+                self.desktop_history.remove(i);
+            }
+        }
     }
 }

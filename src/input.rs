@@ -1,4 +1,4 @@
-use rdev::{listen, Event, Key};
+use rdev::{Event, Key};
 
 use lazy_static::lazy_static;
 
@@ -33,26 +33,28 @@ fn callback(event: Event) {
     match event.event_type {
         rdev::EventType::KeyPress(key) => handle_key_press(key),
         rdev::EventType::KeyRelease(key) => handle_key_release(key),
-        _ => ()
+        _ => (),
     }
 }
 
 fn handle_key_press(key: Key) {
     match key {
         Key::Alt => {
-           INPUT.lock().unwrap().is_alt_pressed = true; 
+            INPUT.lock().unwrap().is_alt_pressed = true;
         }
 
         Key::MetaLeft => {
-            INPUT.lock().unwrap().is_super_pressed = true; 
+            INPUT.lock().unwrap().is_super_pressed = true;
         }
 
         Key::Tab => {
             let mut i = INPUT.lock().unwrap();
-            i.count += 1;
+            if i.is_alt_pressed {
+                i.count += 1;
 
-            let count = i.count;
-            i.desktops.preview_last(count);
+                let count = i.count;
+                i.desktops.preview_last(count);
+            }
         }
 
         Key::LeftBracket => {
@@ -80,16 +82,7 @@ fn handle_key_press(key: Key) {
         Key::Num9 => go_to_desktop(8),
         Key::Num0 => go_to_desktop(9),
 
-        _ => {
-
-        }
-    }
-}
-
-fn go_to_desktop(index: usize) {
-    let mut i = INPUT.lock().unwrap();
-    if i.is_super_pressed {
-        i.desktops.go_to(index)
+        _ => {}
     }
 }
 
@@ -100,15 +93,20 @@ fn handle_key_release(key: Key) {
             let count = i.count;
             i.desktops.last(count);
             i.count = 0;
-            i.is_alt_pressed = false; 
+            i.is_alt_pressed = false;
         }
 
         Key::MetaLeft => {
-            INPUT.lock().unwrap().is_super_pressed = false; 
+            INPUT.lock().unwrap().is_super_pressed = false;
         }
 
-        _ => {
+        _ => (),
+    }
+}
 
-        }
+fn go_to_desktop(index: usize) {
+    let mut i = INPUT.lock().unwrap();
+    if i.is_super_pressed {
+        i.desktops.go_to(index)
     }
 }
