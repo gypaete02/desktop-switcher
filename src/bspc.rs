@@ -42,6 +42,7 @@ pub fn get_active_desktops() -> Vec<usize> {
         .collect()
 }
 
+/// Converts between desktop id and relative. E.g. 0x0200007 to 2 or something like that
 fn to_relative(desktops: &Vec<usize>, n: usize) -> usize {
     for (i, desktop) in desktops.iter().enumerate() {
         if n == *desktop {

@@ -6,21 +6,21 @@ use std::sync::Mutex;
 
 use crate::desktops::Desktops;
 
-struct Input {
-    /// A temporary counter to count how many times a key was pressed
-    count: usize,
-    is_alt_pressed: bool,
-    is_super_pressed: bool,
-    desktops: Desktops,
-}
-
 lazy_static! {
     static ref INPUT: Mutex<Input> = Mutex::new(Input {
-        count: 0,
+        counter: 0,
         is_alt_pressed: false,
         is_super_pressed: false,
         desktops: Desktops::new(),
     });
+}
+
+struct Input {
+    /// A temporary counter to count how many times the alt key was pressed
+    counter: usize,
+    is_alt_pressed: bool,
+    is_super_pressed: bool,
+    desktops: Desktops,
 }
 
 /// Start listening to input and executing movements. This function blocks until the end of the
@@ -50,9 +50,9 @@ fn handle_key_press(key: Key) {
         Key::Tab => {
             let mut i = INPUT.lock().unwrap();
             if i.is_alt_pressed {
-                i.count += 1;
+                i.counter += 1;
 
-                let count = i.count;
+                let count = i.counter;
                 i.desktops.preview_last(count);
             }
         }
@@ -90,9 +90,9 @@ fn handle_key_release(key: Key) {
     match key {
         Key::Alt => {
             let mut i = INPUT.lock().unwrap();
-            let count = i.count;
+            let count = i.counter;
             i.desktops.last(count);
-            i.count = 0;
+            i.counter = 0;
             i.is_alt_pressed = false;
         }
 
