@@ -1,4 +1,4 @@
-use crate::bspc::{self, get_desktops};
+use crate::bspc;
 
 pub struct Desktops {
     desktops: usize,
@@ -7,10 +7,11 @@ pub struct Desktops {
 
 impl Desktops {
     pub fn new() -> Self {
-        let desktops = get_desktops().len();
+        let desktops = bspc::get_desktops().len();
+        let desktop_history = bspc::get_active_desktops();
 
         Self {
-            desktop_history: vec![0],
+            desktop_history,
             desktops,
         }
     }
@@ -33,9 +34,7 @@ impl Desktops {
                 let temp = self.desktop_history.remove(idx);
                 self.desktop_history.insert(0, temp);
             }
-            None => {
-                self.desktop_history.insert(0, current_index)
-            }
+            None => self.desktop_history.insert(0, current_index),
         }
 
         self.update();
@@ -59,9 +58,7 @@ impl Desktops {
                 let temp = self.desktop_history.remove(idx);
                 self.desktop_history.insert(0, temp);
             }
-            None => {
-                self.desktop_history.insert(0, current_index)
-            }
+            None => self.desktop_history.insert(0, current_index),
         }
 
         self.update();
@@ -81,9 +78,7 @@ impl Desktops {
                 let temp = self.desktop_history.remove(idx);
                 self.desktop_history.insert(0, temp);
             }
-            None => {
-                self.desktop_history.insert(0, current_index)
-            }
+            None => self.desktop_history.insert(0, current_index),
         }
 
         self.update();
