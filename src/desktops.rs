@@ -84,6 +84,15 @@ impl Desktops {
         self.update();
     }
 
+    /// Send the focused window to the specified desktop. When `go_to` is true, it will
+    /// automatically make the destination desktop focused.
+    pub fn send_to(&mut self, index: usize, go_to: bool) {
+        bspc::send_to(index + 1);
+        if go_to {
+            self.go_to(index);
+        }
+    }
+
     /// Go to the desktop that was last visited. If you were on 4, then 2 and then 8, and then called
     /// `last(2)` you will go to desktop 4
     pub fn last(&mut self, count: usize) {
@@ -107,18 +116,18 @@ impl Desktops {
         self.clean_history();
 
         let current_index = self.desktop_history[count % self.desktop_history.len()];
-        bspc::go_to_tab(current_index + 1);
+        bspc::go_to_desktop(current_index + 1);
     }
 
     fn update(&self) {
-        bspc::go_to_tab(self.desktop_history[0] + 1);
+        bspc::go_to_desktop(self.desktop_history[0] + 1);
     }
 
     fn clean_history(&mut self) {
         let active_desktops = bspc::get_active_desktops();
 
         for i in 0..self.desktop_history.len().saturating_sub(1) {
-            if !active_desktops.contains(&self.desktop_history[i]) {
+            if !active_desktops.contains(&self.desktop_history.get(i).unwrap_or(&0)) {
                 self.desktop_history.remove(i);
             }
         }

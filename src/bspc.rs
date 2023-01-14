@@ -16,12 +16,20 @@ pub fn get_desktops() -> Vec<usize> {
         .collect()
 }
 
-pub fn go_to_tab(desktop_id: usize) {
+pub fn go_to_desktop(desktop_id: usize) {
     Command::new("/usr/bin/bspc")
         .args(["desktop", "-f", format!("^{desktop_id}").as_str()])
         .spawn()
         .expect("Error: could not execute bspc");
 }
+
+pub fn send_to(desktop_id: usize) {
+    Command::new("/usr/bin/bspc")
+        .args(["node", "-d", format!("^{desktop_id}").as_str()])
+        .spawn()
+        .expect("Error: could not execute bspc");
+}
+
 
 /// Returns a Vec containing the relative index of the desktops that are active.
 pub fn get_active_desktops() -> Vec<usize> {

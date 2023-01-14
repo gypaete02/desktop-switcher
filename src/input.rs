@@ -11,6 +11,7 @@ lazy_static! {
         counter: 0,
         is_alt_pressed: false,
         is_super_pressed: false,
+        is_shift_pressed: false,
         desktops: Desktops::new(),
     });
 }
@@ -20,6 +21,7 @@ struct Input {
     counter: usize,
     is_alt_pressed: bool,
     is_super_pressed: bool,
+    is_shift_pressed: bool,
     desktops: Desktops,
 }
 
@@ -45,6 +47,10 @@ fn handle_key_press(key: Key) {
 
         Key::MetaLeft => {
             INPUT.lock().unwrap().is_super_pressed = true;
+        }
+
+        Key::ShiftLeft | Key::ShiftRight => {
+            INPUT.lock().unwrap().is_shift_pressed = true;
         }
 
         Key::Tab => {
@@ -100,13 +106,23 @@ fn handle_key_release(key: Key) {
             INPUT.lock().unwrap().is_super_pressed = false;
         }
 
+        Key::ShiftLeft | Key::ShiftRight => {
+            INPUT.lock().unwrap().is_shift_pressed = false;
+        }
+
         _ => (),
     }
 }
 
 fn go_to_desktop(index: usize) {
     let mut i = INPUT.lock().unwrap();
+    let go_to = i.is_alt_pressed;
+
     if i.is_super_pressed {
-        i.desktops.go_to(index)
+        if i.is_shift_pressed {
+            i.desktops.send_to(index, go_to);
+        } else {
+            i.desktops.go_to(index)
+        }
     }
 }
